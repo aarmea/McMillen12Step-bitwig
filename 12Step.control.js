@@ -15,7 +15,7 @@ const STOP_ALL_NOTE = 54; // F# 4
 const SCENE_SWITCH_NOTE = 56; // G# 4
 const PAGE_TURN_NOTE = 58; //  A# 4
 
-const DOUBLE_TAP_HOLD_TIMEOUT = 3000; // milliseconds // XXX: bring this back to 300
+const DOUBLE_TAP_HOLD_TIMEOUT = 500; // milliseconds
 
 var noteMap;
 

@@ -15,10 +15,6 @@ var NoteManager = function(timeout, singleTapCallback, doubleTapCallback, holdCa
 }
 
 NoteManager.prototype.onNoteEvent = function(eventType) {
-  // JavaScript `this` isn't passed to host.scheduleTask callback properly (just
-  // like window.setTimeout)
-  var thisInstance = this;
-
   switch(eventType) {
     case MIDI_NOTE_ON:
       this.noteDown = true;
