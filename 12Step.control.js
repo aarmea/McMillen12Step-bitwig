@@ -13,6 +13,8 @@ const STOP_ALL_NOTE = 54; // F# 4
 const SCENE_SWITCH_NOTE = 56; // G# 4
 const PAGE_TURN_NOTE = 58; //  A# 4
 
+const DOUBLE_TAP_HOLD_TIMEOUT = 3000; // milliseconds // XXX: bring this back to 300
+
 var noteMap;
 
 function init() {
@@ -23,18 +25,19 @@ function init() {
   noteMap = {};
   CLIP_CONTROL_NOTES.forEach(function(noteId, clipId) {
     noteMap[CLIP_CONTROL_NOTES[clipId]] = new NoteManager(
-        function() { // singleTapCallback
-          host.println("Single tap clip " + clipId);
-          // TODO: Trigger clip clipId at the currently selected scene
-        },
-        function() { // doubleTapCallback
-          host.println("Double tap clip " + clipId);
-          // TODO: Stop clip clipId at the currently selected scene
-        },
-        function() { // holdCallback
-          host.println("Hold clip " + clipId);
-          // TODO: Delete clip clipId at the currently selected scene
-        }
+      DOUBLE_TAP_HOLD_TIMEOUT,
+      function() { // singleTapCallback
+        host.println("Single tap clip " + clipId);
+        // TODO: Trigger clip clipId at the currently selected scene
+      },
+      function() { // doubleTapCallback
+        host.println("Double tap clip " + clipId);
+        // TODO: Stop clip clipId at the currently selected scene
+      },
+      function() { // holdCallback
+        host.println("Hold clip " + clipId);
+        // TODO: Delete clip clipId at the currently selected scene
+      }
     );
   });
   // TODO: STOP_ALL_NOTE, SCENE_SWITCH_NOTE, PAGE_TURN_NOTE
@@ -60,15 +63,47 @@ function onMidi(midiStatus, data1, data2)
     noteMap[data1].onNoteEvent(eventType);
 }
 
-// TODO: Move this to a different file
-const DOUBLE_TAP_HOLD_TIMEOUT = 3000; // milliseconds // XXX: bring this back to 300
+// TODO: Move these to a different file
+const TASK_STOPPED = -1;
 
-var NoteManager = function(singleTapCallback, doubleTapCallback, holdCallback) {
+var CancelableTask = function(callback, timeout) {
+  this.cookie = TASK_STOPPED;
+  this.callback = callback;
+  this.timeout = timeout;
+}
+
+CancelableTask.prototype.start = function(callback, timeout) {
+  this.cookie = Math.floor(Math.random() * 2147483648);
+
+  var thisTask = this;
+  host.scheduleTask(function(cachedCookie) {
+    if (cachedCookie == thisTask.cookie) {
+      thisTask.callback();
+      thisTask.cookie = TASK_STOPPED;
+    }
+  }, [this.cookie] /*args*/, this.timeout);
+}
+
+CancelableTask.prototype.cancel = function() {
+  this.cookie = TASK_STOPPED;
+}
+
+CancelableTask.prototype.isActive = function() {
+  return (this.cookie != TASK_STOPPED);
+}
+
+var NoteManager = function(timeout, singleTapCallback, doubleTapCallback, holdCallback) {
   this.singleTapCallback = singleTapCallback;
   this.doubleTapCallback = doubleTapCallback;
   this.holdCallback = holdCallback;
-  this.timerActive = false
   this.noteDown = false;
+
+  var thisManager = this;
+  this.timer = new CancelableTask(function() {
+    if (thisManager.noteDown) {
+      thisManager.holdCallback();
+    }
+  }, timeout);
 }
 
 NoteManager.prototype.onNoteEvent = function(eventType) {
@@ -79,23 +114,12 @@ NoteManager.prototype.onNoteEvent = function(eventType) {
   switch(eventType) {
     case MIDI_NOTE_ON:
       this.noteDown = true;
-      if (this.timerActive) {
+      if (this.timer.isActive()) {
         this.doubleTapCallback();
-        this.timerActive = false;
-        // TODO: Cancel the timer here (the API provides no way to do this...)
-        // This is causing a bug where if you short tap (triggering a
-        // singleTapCallback and starting the timer), short tap again shortly
-        // after (triggering doubleTapCallback and setting timerActive = false),
-        // and tap and hold before the timer expires, the holdCallback is
-        // triggered much sooner than expected.
+        this.timer.cancel();
       } else {
         this.singleTapCallback();
-        host.scheduleTask(function() {
-          if (thisInstance.timerActive && thisInstance.noteDown)
-            thisInstance.holdCallback();
-          thisInstance.timerActive = false;
-        }, null /*args*/, DOUBLE_TAP_HOLD_TIMEOUT);
-        this.timerActive = true;
+        this.timer.start();
       }
       break;
     case MIDI_NOTE_OFF:
