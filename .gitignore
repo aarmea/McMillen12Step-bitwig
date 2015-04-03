@@ -1,0 +1,6 @@
+# OS-specific indices
+.DS_Store
+Thumbs.db
+
+# Vim swap files
+*.swp
