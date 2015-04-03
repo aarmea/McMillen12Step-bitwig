@@ -61,19 +61,45 @@ function onMidi(midiStatus, data1, data2)
 }
 
 // TODO: Move this to a different file
+const DOUBLE_TAP_HOLD_TIMEOUT = 3000; // milliseconds // XXX: bring this back to 300
+
 var NoteManager = function(singleTapCallback, doubleTapCallback, holdCallback) {
   this.singleTapCallback = singleTapCallback;
   this.doubleTapCallback = doubleTapCallback;
   this.holdCallback = holdCallback;
+  this.timerActive = false
+  this.noteDown = false;
 }
 
 NoteManager.prototype.onNoteEvent = function(eventType) {
-  // TODO: Handle the other callbacks
+  // JavaScript `this` isn't passed to host.scheduleTask callback properly (just
+  // like window.setTimeout)
+  var thisInstance = this;
+
   switch(eventType) {
     case MIDI_NOTE_ON:
-      this.singleTapCallback();
+      this.noteDown = true;
+      if (this.timerActive) {
+        this.doubleTapCallback();
+        this.timerActive = false;
+        // TODO: Cancel the timer here (the API provides no way to do this...)
+        // This is causing a bug where if you short tap (triggering a
+        // singleTapCallback and starting the timer), short tap again shortly
+        // after (triggering doubleTapCallback and setting timerActive = false),
+        // and tap and hold before the timer expires, the holdCallback is
+        // triggered much sooner than expected.
+      } else {
+        this.singleTapCallback();
+        host.scheduleTask(function() {
+          if (thisInstance.timerActive && thisInstance.noteDown)
+            thisInstance.holdCallback();
+          thisInstance.timerActive = false;
+        }, null /*args*/, DOUBLE_TAP_HOLD_TIMEOUT);
+        this.timerActive = true;
+      }
       break;
     case MIDI_NOTE_OFF:
+      this.noteDown = false;
       break;
     default:
       break;
