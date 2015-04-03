@@ -1,5 +1,7 @@
 loadAPI(1);
 
+load("NoteManager.js");
+
 host.defineController("Keith McMillen", "12 Step", "0.1.0", "22f76bfc-789d-43ef-8468-71ab2f645b12", "Albert Armea");
 host.defineMidiPorts(1, 0);
 host.addDeviceNameBasedDiscoveryPair(["12Step"], []);
@@ -62,71 +64,3 @@ function onMidi(midiStatus, data1, data2)
   if (data1 in noteMap)
     noteMap[data1].onNoteEvent(eventType);
 }
-
-// TODO: Move these to a different file
-const TASK_STOPPED = -1;
-
-var CancelableTask = function(callback, timeout) {
-  this.cookie = TASK_STOPPED;
-  this.callback = callback;
-  this.timeout = timeout;
-}
-
-CancelableTask.prototype.start = function(callback, timeout) {
-  this.cookie = Math.floor(Math.random() * 2147483648);
-
-  var thisTask = this;
-  host.scheduleTask(function(cachedCookie) {
-    if (cachedCookie == thisTask.cookie) {
-      thisTask.callback();
-      thisTask.cookie = TASK_STOPPED;
-    }
-  }, [this.cookie] /*args*/, this.timeout);
-}
-
-CancelableTask.prototype.cancel = function() {
-  this.cookie = TASK_STOPPED;
-}
-
-CancelableTask.prototype.isActive = function() {
-  return (this.cookie != TASK_STOPPED);
-}
-
-var NoteManager = function(timeout, singleTapCallback, doubleTapCallback, holdCallback) {
-  this.singleTapCallback = singleTapCallback;
-  this.doubleTapCallback = doubleTapCallback;
-  this.holdCallback = holdCallback;
-  this.noteDown = false;
-
-  var thisManager = this;
-  this.timer = new CancelableTask(function() {
-    if (thisManager.noteDown) {
-      thisManager.holdCallback();
-    }
-  }, timeout);
-}
-
-NoteManager.prototype.onNoteEvent = function(eventType) {
-  // JavaScript `this` isn't passed to host.scheduleTask callback properly (just
-  // like window.setTimeout)
-  var thisInstance = this;
-
-  switch(eventType) {
-    case MIDI_NOTE_ON:
-      this.noteDown = true;
-      if (this.timer.isActive()) {
-        this.doubleTapCallback();
-        this.timer.cancel();
-      } else {
-        this.singleTapCallback();
-        this.timer.start();
-      }
-      break;
-    case MIDI_NOTE_OFF:
-      this.noteDown = false;
-      break;
-    default:
-      break;
-  }
-}
-
