@@ -4,7 +4,8 @@ load("NoteManager.js");
 
 host.defineController("Keith McMillen", "12 Step", "0.1.0", "22f76bfc-789d-43ef-8468-71ab2f645b12", "Albert Armea");
 host.defineMidiPorts(1, 0);
-host.addDeviceNameBasedDiscoveryPair(["12Step"], []);
+host.addDeviceNameBasedDiscoveryPair(["12Step"], []); // Windows
+host.addDeviceNameBasedDiscoveryPair(["12Step Port 1"], []); // Mac
 
 const MIDI_NOTE_OFF = 0x80;
 const MIDI_NOTE_ON = 0x90;
