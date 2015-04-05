@@ -29,6 +29,7 @@ function init() {
   noteMap = {};
   TRACK_CONTROL_NOTES.forEach(function(noteId, trackId) {
     var clipLauncher = trackBank.getTrack(trackId).getClipLauncherSlots();
+    clipLauncher.setIndication(true);
     noteMap[TRACK_CONTROL_NOTES[trackId]] = new NoteManager(
         DOUBLE_TAP_HOLD_TIMEOUT,
         function() { // singleTapCallback
@@ -75,21 +76,6 @@ function init() {
         trackBank.scrollScenesPageUp();
       },
       function() {} // holdCallback
-  );
-
-  // The only way to get a Scene object from a document is using a SceneBank
-  var allScenes = host.createSceneBank(16);
-  trackBank.addSceneScrollPositionObserver(
-      function(sceneId) {
-        host.println("Scrolled to scene " + sceneId);
-        var scene = allScenes.getScene(sceneId);
-        // TODO: scene.getName() returns garbage like
-        // "com.bitwig.flt.control_surface.intention.values.StringIntention@599cc5"
-        host.println("Scene \"" + scene.getName() + "\"");
-        scene.selectInEditor(); // TODO: This does nothing
-        scene.showInEditor();
-      },
-      0 // valueWhenUnassigned
   );
 
   // TODO: PAGE_TURN_NOTE
