@@ -11,39 +11,88 @@ const MIDI_NOTE_OFF = 0x80;
 const MIDI_NOTE_ON = 0x90;
 
 // All notes in [C4, C5] except F#, G#, and A#
-const CLIP_CONTROL_NOTES = [48, 49, 50, 51, 52, 53, 55, 57, 59, 60];
+const TRACK_CONTROL_NOTES = [48, 49, 50, 51, 52, 53, 55, 57, 59, 60];
 const STOP_ALL_NOTE = 54; // F# 4
 const SCENE_SWITCH_NOTE = 56; // G# 4
 const PAGE_TURN_NOTE = 58; //  A# 4
 
 const DOUBLE_TAP_HOLD_TIMEOUT = 500; // milliseconds
 
-var noteMap;
+var noteMap; // A mapping from MIDI note values to their handlers
 
 function init() {
   host.getMidiInPort(0).setMidiCallback(onMidi);
 
-  // A mapping from MIDI notes to what we want to do with them
-  // TODO: Move this to its own class?
+  var trackBank = host.createMainTrackBank(
+      TRACK_CONTROL_NOTES.length, 0 /*numSends*/, 1 /*numScenes*/);
+
   noteMap = {};
-  CLIP_CONTROL_NOTES.forEach(function(noteId, clipId) {
-    noteMap[CLIP_CONTROL_NOTES[clipId]] = new NoteManager(
-      DOUBLE_TAP_HOLD_TIMEOUT,
-      function() { // singleTapCallback
-        host.println("Single tap clip " + clipId);
-        // TODO: Trigger clip clipId at the currently selected scene
-      },
-      function() { // doubleTapCallback
-        host.println("Double tap clip " + clipId);
-        // TODO: Stop clip clipId at the currently selected scene
-      },
-      function() { // holdCallback
-        host.println("Hold clip " + clipId);
-        // TODO: Delete clip clipId at the currently selected scene
-      }
+  TRACK_CONTROL_NOTES.forEach(function(noteId, trackId) {
+    var clipLauncher = trackBank.getTrack(trackId).getClipLauncherSlots();
+    noteMap[TRACK_CONTROL_NOTES[trackId]] = new NoteManager(
+        DOUBLE_TAP_HOLD_TIMEOUT,
+        function() { // singleTapCallback
+          host.println("Launch clip " + trackId);
+          clipLauncher.launch(0 /*scene*/);
+        },
+        function() { // doubleTapCallback
+          host.println("Stop clip " + trackId);
+          clipLauncher.stop();
+        },
+        function() { // holdCallback
+          host.println("Re-record clip " + trackId);
+          clipLauncher.record(0 /*scene*/);
+        }
     );
   });
-  // TODO: STOP_ALL_NOTE, SCENE_SWITCH_NOTE, PAGE_TURN_NOTE
+
+  noteMap[STOP_ALL_NOTE] = new NoteManager(
+      DOUBLE_TAP_HOLD_TIMEOUT,
+      function() { // singleTapCallback
+        host.println("Stop scene"); // TODO
+        // This stops *tracks* that are used in this scene, regardless of
+        // whether the clip from the track that's playing is the one we actually
+        // want to stop.
+        // trackBank.getClipLauncherScenes().stop();
+
+      },
+      function() { // doubleTapCallback
+        host.println("Stop globally"); // TODO
+      },
+      function() {} // holdCallback
+  );
+
+  noteMap[SCENE_SWITCH_NOTE] = new NoteManager(
+      DOUBLE_TAP_HOLD_TIMEOUT,
+      function() { // singleTapCallback
+        host.println("Move down a scene");
+        trackBank.scrollScenesPageDown();
+      },
+      function() { // doubleTapCallback
+        host.println("Move up a scene");
+        // Double taps also fire a single tap, so we need to do this twice
+        trackBank.scrollScenesPageUp();
+        trackBank.scrollScenesPageUp();
+      },
+      function() {} // holdCallback
+  );
+
+  // The only way to get a Scene object from a document is using a SceneBank
+  var allScenes = host.createSceneBank(16);
+  trackBank.addSceneScrollPositionObserver(
+      function(sceneId) {
+        host.println("Scrolled to scene " + sceneId);
+        var scene = allScenes.getScene(sceneId);
+        // TODO: scene.getName() returns garbage like
+        // "com.bitwig.flt.control_surface.intention.values.StringIntention@599cc5"
+        host.println("Scene \"" + scene.getName() + "\"");
+        scene.selectInEditor(); // TODO: This does nothing
+        scene.showInEditor();
+      },
+      0 // valueWhenUnassigned
+  );
+
+  // TODO: PAGE_TURN_NOTE
 }
 
 function exit() {
