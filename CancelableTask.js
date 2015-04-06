@@ -1,5 +1,11 @@
 const TASK_STOPPED = -1;
 
+/* CancelableTask is a wrapper around host.scheduleTask that allows the task to
+ * be canceled before it starts execution.
+ *
+ * If the task is start()ed after it was scheduled but before it is run, the
+ * initial call to start() is ignored.
+ */
 var CancelableTask = function(callback, timeout) {
   this.taskId = TASK_STOPPED;
   this.callback = callback;

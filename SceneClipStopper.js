@@ -1,10 +1,11 @@
-// SceneClipStopper should be used similarly to ClipLauncherSlots (as returned
-// by host.createMainTrackBank(...).getTrack(...).getClipLauncherSlots();) -
-// instances correspond to tracks.
-//
-// Usage: [SceneClipStopper instance].stop(sceneIndex)
-// Stops the clip at sceneIndex relative to the trackBank's window (as opposed
-// to [ClipLauncherSlots instance].stop(), which stops the *entire track*).
+/* SceneClipStopper should be used similarly to ClipLauncherSlots (as returned
+ * by host.createMainTrackBank(...).getTrack(...).getClipLauncherSlots();) -
+ * instances correspond to tracks.
+ *
+ * Usage: [SceneClipStopper instance].stop(sceneIndex)
+ * Stops the clip at sceneIndex relative to the trackBank's window (as opposed
+ * to [ClipLauncherSlots instance].stop(), which stops the *entire track*).
+ */
 var SceneClipStopper;
 
 (function() {

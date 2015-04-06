@@ -78,7 +78,7 @@ function init() {
       },
       function() { // doubleTapCallback
         host.println("Move up a scene");
-        // Double taps also fire a single tap, so we need to do this twice
+        // Double taps also fire a single tap, so we need to do this twice.
         trackBank.scrollScenesPageUp();
         trackBank.scrollScenesPageUp();
       },
