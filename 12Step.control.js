@@ -1,6 +1,7 @@
 loadAPI(1);
 
 load("NoteManager.js");
+load("SceneClipStopper.js");
 
 host.defineController("Keith McMillen", "12 Step", "0.1.0", "22f76bfc-789d-43ef-8468-71ab2f645b12", "Albert Armea");
 host.defineMidiPorts(1, 0);
@@ -25,11 +26,15 @@ function init() {
 
   var trackBank = host.createMainTrackBank(
       TRACK_CONTROL_NOTES.length, 0 /*numSends*/, 1 /*numScenes*/);
+  var trackClipStoppers = [];
 
   noteMap = {};
   TRACK_CONTROL_NOTES.forEach(function(noteId, trackId) {
     var clipLauncher = trackBank.getTrack(trackId).getClipLauncherSlots();
+    var clipStopper = new SceneClipStopper(trackBank, clipLauncher);
+    trackClipStoppers[trackId] = clipStopper;
     clipLauncher.setIndication(true);
+
     noteMap[TRACK_CONTROL_NOTES[trackId]] = new NoteManager(
         DOUBLE_TAP_HOLD_TIMEOUT,
         function() { // singleTapCallback
@@ -38,7 +43,7 @@ function init() {
         },
         function() { // doubleTapCallback
           host.println("Stop clip " + trackId);
-          clipLauncher.stop();
+          clipStopper.stop(0 /*scene*/);
         },
         function() { // holdCallback
           host.println("Re-record clip " + trackId);
@@ -50,11 +55,13 @@ function init() {
   noteMap[STOP_ALL_NOTE] = new NoteManager(
       DOUBLE_TAP_HOLD_TIMEOUT,
       function() { // singleTapCallback
-        host.println("Stop scene"); // TODO
-        // This stops *tracks* that are used in this scene, regardless of
-        // whether the clip from the track that's playing is the one we actually
-        // want to stop.
-        // trackBank.getClipLauncherScenes().stop();
+        host.println("Stop scene");
+        // I'd use `trackBank.getClipLauncherScenes().stop();`, but that stops
+        // *tracks* that are used in this scene, regardless of whether the clip
+        // from the track that's playing is the one we actually want to stop.
+        trackClipStoppers.forEach(function(clipStopper) {
+          clipStopper.stop(0 /*scene*/);
+        });
 
       },
       function() { // doubleTapCallback
