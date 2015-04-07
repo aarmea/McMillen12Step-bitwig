@@ -43,6 +43,12 @@ function init() {
         },
         function() { // doubleTapCallback
           host.println("Stop clip " + trackId);
+          // TODO: the previous singleTapCallback also launched this clip,
+          // meaning that doubleTapCallback will *always* stop the entire track,
+          // regardless of what clip was playing when the first tap happened.
+          // This will probably need proper undo support (in the form of
+          // singleTapUndoCallback we call after doubleTapCallback and
+          // holdCallback?) to fix.
           clipStopper.stop(0 /*scene*/);
         },
         function() { // holdCallback
@@ -50,6 +56,9 @@ function init() {
           clipLauncher.record(0 /*scene*/);
         }
     );
+
+    // TODO: Record arm these tracks
+    // [Track instance].getArm().set(true);
   });
 
   noteMap[STOP_ALL_NOTE] = new NoteManager(
@@ -85,7 +94,7 @@ function init() {
       function() {} // holdCallback
   );
 
-  // TODO: PAGE_TURN_NOTE
+  // TODO: PAGE_TURN_NOTE, effect triggering
 }
 
 function exit() {
