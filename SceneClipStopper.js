@@ -57,4 +57,10 @@ var SceneClipStopper;
       this.trackClipLauncher.stop();
     }
   }
+
+  SceneClipStopper.prototype.stopAllExcept = function(sceneIndex) {
+    if (!this.getClipStatus(this.sceneScrollPosition + sceneIndex).isActive()) {
+      this.trackClipLauncher.stop();
+    }
+  }
 })();

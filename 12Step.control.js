@@ -13,7 +13,7 @@ const MIDI_NOTE_ON = 0x90;
 
 // All notes in [C4, C5] except F#, G#, and A#
 const TRACK_CONTROL_NOTES = [48, 50, 52, 53, 55, 57, 59, 60, 49, 51];
-const STOP_ALL_NOTE = 54; // F# 4
+const SCENE_CONTROL_NOTE = 54; // F# 4
 const SCENE_SWITCH_NOTE = 56; // G# 4
 const PAGE_TURN_NOTE = 58; //  A# 4
 
@@ -61,22 +61,28 @@ function init() {
     // [Track instance].getArm().set(true);
   });
 
-  noteMap[STOP_ALL_NOTE] = new NoteManager(
+  noteMap[SCENE_CONTROL_NOTE] = new NoteManager(
       DOUBLE_TAP_HOLD_TIMEOUT,
       function() { // singleTapCallback
+        host.println("Launch scene");
+        trackBank.getClipLauncherScenes().launchScene(0 /*indexInWindow*/);
+      },
+      function() { // doubleTapCallback
         host.println("Stop scene");
         // I'd use `trackBank.getClipLauncherScenes().stop();`, but that stops
         // *tracks* that are used in this scene, regardless of whether the clip
-        // from the track that's playing is the one we actually want to stop.
+        // from the track that's playing is actually part of this scene.
         trackClipStoppers.forEach(function(clipStopper) {
           clipStopper.stop(0 /*scene*/);
         });
-
       },
-      function() { // doubleTapCallback
-        host.println("Stop globally"); // TODO
-      },
-      function() {} // holdCallback
+      function() { // holdCallback
+        host.println("Stop all other scenes");
+        // TODO: the previous singleTapCallback also launched this scene.
+        trackClipStoppers.forEach(function(clipStopper) {
+          clipStopper.stopAllExcept(0 /*scene*/);
+        });
+      }
   );
 
   noteMap[SCENE_SWITCH_NOTE] = new NoteManager(

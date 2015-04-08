@@ -39,7 +39,7 @@ C4 (MIDI note 48):
 ```
  _______________________________
 |  |C| |C|  |  |S| |S| |P|  |   |
-|  |9| |1|  |  |T| |C| |G|  |   |
+|  |9| |1|  |  |c| |n| |g|  |   |
 |  | | |0|  |  | | | | | |  |   |
 |  |_| |_|  |  |_| |_| |_|  |   |
 | C | C | C | C | C | C | C | C |
@@ -47,11 +47,10 @@ C4 (MIDI note 48):
 |___|___|___|___|___|___|___|___|
 ```
 
-### Clip control
+### Clip control (C1, C2, ...)
 
 Clip control is done using all of the white keys and C# and D#. Each key
-corresponds to a clip on the currently selected scene (as mapped above with Cx,
-where x is the track the clip is on).
+corresponds to a clip on the currently selected scene.
 
 * To start recording a clip for the first time, tap its key once. When you're
   finished, single tap to have Bitwig loop your clip or double tap to just stop
@@ -59,9 +58,9 @@ where x is the track the clip is on).
 
 * To launch a stopped clip, tap its key once. Double tap to stop the clip.
 
-* To re-record a clip, press and hold its key until recording begins.
+* To re-record a clip, tap and hold its key until recording begins.
 
-### Navigating scenes
+### Navigating scenes (Sn)
 
 The selected scene is indicated by a light gray outline around the clips this
 script is currently controlling.
@@ -70,12 +69,22 @@ script is currently controlling.
 
 * To switch to the previous scene up, double tap G#.
 
-* To stop the currently selected scene, single tap F#.
+### Scene control (Sc)
+
+* To launch the currently selected scene, single tap F#.
+
+* To stop the currently selected scene, double tap F#.
+
+* To stop all scenes *except* the currently selected scene, tap and hold F#
+  until the scenes are stopped.
+
+  * Known issue: This will also launch the currently selected scene because
+    there is currently no way to cancel/undo the single tap event.
 
 ### Effects control
 
 Not implemented (will use the expression pedal input)
 
-### Navigating sheet music
+### Navigating sheet music (Pg)
 
 Not implemented (will use B flat to turn pages)
