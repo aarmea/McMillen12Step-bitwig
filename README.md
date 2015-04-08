@@ -8,21 +8,15 @@ Setup
 -----
 
 0. Connect your 12 Step and install the drivers.
-
 1. Put your 12 Step in the default chromatic mode. (This is normally the one
    that is active when you first plug it in.)
-
 2. Clone this repository into the Bitwig Controller Scripts directory:
-
   * Windows: `%USERPROFILE%\Documents\Bitwig Studio\Controller Scripts`
   * Mac: `~/Documents/Bitwig Studio/Controller Scripts`
   * Linux: `~/Bitwig Studio/Controller Scripts`
-
 3. Open Bitwig Studio.
-
 4. In [Bitwig preferences]/Controllers, click "Detect available controllers".
    Your 12 step should be automatically added.
-
 5. Change Bitwig to Mix mode, add up to 10 tracks, and record enable these
    tracks.
 
@@ -55,9 +49,7 @@ corresponds to a clip on the currently selected scene.
 * To start recording a clip for the first time, tap its key once. When you're
   finished, single tap to have Bitwig loop your clip or double tap to just stop
   recording.
-
 * To launch a stopped clip, tap its key once. Double tap to stop the clip.
-
 * To re-record a clip, tap and hold its key until recording begins.
 
 ### Navigating scenes (Sn)
@@ -66,18 +58,14 @@ The selected scene is indicated by a light gray outline around the clips this
 script is currently controlling.
 
 * To switch to the next scene down, single tap G#.
-
 * To switch to the previous scene up, double tap G#.
 
 ### Scene control (Sc)
 
 * To launch the currently selected scene, single tap F#.
-
 * To stop the currently selected scene, double tap F#.
-
 * To stop all scenes *except* the currently selected scene, tap and hold F#
   until the scenes are stopped.
-
   * Known issue: This will also launch the currently selected scene because
     there is currently no way to cancel/undo the single tap event.
 
