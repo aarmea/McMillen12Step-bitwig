@@ -10,6 +10,10 @@ host.addDeviceNameBasedDiscoveryPair(["12Step Port 1"], []); // Mac
 
 const MIDI_NOTE_OFF = 0x80;
 const MIDI_NOTE_ON = 0x90;
+const MIDI_CC = 0xB0;
+
+const DEVICE_MIDI_CHANNEL = 0;
+const DEVICE_EXPRESSION_CC = 7;
 
 // All notes in [C4, C5] except F#, G#, and A#
 const TRACK_CONTROL_NOTES = [48, 50, 52, 53, 55, 57, 59, 60, 49, 51];
@@ -20,6 +24,7 @@ const PAGE_TURN_NOTE = 58; //  A# 4
 const DOUBLE_TAP_HOLD_TIMEOUT = 500; // milliseconds
 
 var noteMap; // A mapping from MIDI note values to their handlers
+var ccMap; // A mapping from CC events to their handlers
 
 function init() {
   host.getMidiInPort(0).setMidiCallback(onMidi);
@@ -56,16 +61,13 @@ function init() {
           clipLauncher.record(0 /*scene*/);
         }
     );
-
-    // TODO: Record arm these tracks
-    // [Track instance].getArm().set(true);
   });
 
   noteMap[SCENE_CONTROL_NOTE] = new NoteManager(
       DOUBLE_TAP_HOLD_TIMEOUT,
       function() { // singleTapCallback
         host.println("Launch scene");
-        trackBank.getClipLauncherScenes().launchScene(0 /*indexInWindow*/);
+        trackBank.getClipLauncherScenes().launch(0 /*indexInWindow*/);
       },
       function() { // doubleTapCallback
         host.println("Stop scene");
@@ -100,7 +102,20 @@ function init() {
       function() {} // holdCallback
   );
 
-  // TODO: PAGE_TURN_NOTE, effect triggering
+  var expressionCc = host.createUserControls(1 /*numControllers*/).getControl(0);
+  expressionCc.setLabel("12 Step Expression");
+  expressionCc.setIndication(true);
+
+  ccMap = {};
+  ccMap[DEVICE_EXPRESSION_CC] = function(ccValue) {
+    // My setup uses a sustain pedal connected to the 12 Step via a hacky
+    // adapter. Change this if you have a real expression pedal to something
+    // like:
+    // expressionCc.set(ccValue, 128);
+    expressionCc.set((ccValue > 63) ? 0 : 1, 2);
+  }
+
+  // TODO: PAGE_TURN_NOTE
 }
 
 function exit() {
@@ -112,13 +127,23 @@ function onMidi(midiStatus, data1, data2)
   var channel = midiStatus & 0x0F;
   var eventType = midiStatus & 0xF0;
 
-  if (channel != 0)
-    return;
-  if (eventType != MIDI_NOTE_OFF && eventType != MIDI_NOTE_ON)
+  if (channel != DEVICE_MIDI_CHANNEL)
     return;
 
-  // For note on and note off, data1 is the note number and data2 is the
-  // velocity
-  if (data1 in noteMap)
-    noteMap[data1].onNoteEvent(eventType);
+  switch (eventType) {
+    case MIDI_NOTE_OFF:
+    case MIDI_NOTE_ON:
+      // For note on and note off, data1 is the note number and data2 is the
+      // velocity.
+      if (data1 in noteMap)
+        noteMap[data1].onNoteEvent(eventType);
+      break;
+    case MIDI_CC:
+      // For CC events, data1 is the device and data2 is the value.
+      if (data1 in ccMap)
+        ccMap[data1](data2);
+      break;
+    default:
+      break;
+  }
 }

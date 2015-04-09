@@ -71,7 +71,15 @@ script is currently controlling.
 
 ### Effects control
 
-Not implemented (will use the expression pedal input)
+Effects control is done using the expression pedal:
+
+1. Add an effect to a track.
+2. In the device panel, find the effect's presets and macros settings (triggered
+   with an icon that looks like `<>`.
+3. Right click one of the knobs and click "Learn Controller Assignment".
+4. Press the expression pedal.
+5. Click the button above the knob you just assigned (looks like `*->`) and
+   then click the value you want to control.
 
 ### Navigating sheet music (Pg)
 
