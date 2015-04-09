@@ -32,8 +32,8 @@ C4 (MIDI note 48):
 
 ```
  _______________________________
-|  |C| |C|  |  |S| |S| |P|  |   |
-|  |9| |1|  |  |c| |n| |g|  |   |
+|  |C| |C|  |  |S| |S| |?|  |   |
+|  |9| |1|  |  |c| |n| |?|  |   |
 |  | | |0|  |  | | | | | |  |   |
 |  |_| |_|  |  |_| |_| |_|  |   |
 | C | C | C | C | C | C | C | C |
@@ -74,13 +74,18 @@ script is currently controlling.
 Effects control is done using the expression pedal:
 
 1. Add an effect to a track.
-2. In the device panel, find the effect's presets and macros settings (triggered
-   with an icon that looks like `<>`.
+2. In the device panel, find the effect's presets and macros settings (opened
+   with an icon that looks like `<>`).
 3. Right click one of the knobs and click "Learn Controller Assignment".
 4. Press the expression pedal.
 5. Click the button above the knob you just assigned (looks like `*->`) and
    then click the value you want to control.
 
-### Navigating sheet music (Pg)
+The pedal range is currently a bit stupid to accomodate my setup. You probably
+want to adjust it. Look for a line in 12Step.control.js that looks like
+`expressionCc.set(...);`.
 
-Not implemented (will use B flat to turn pages)
+### Unassigned key (??)
+
+B flat is intentionally left unassigned so that it can be captured by another
+application (in my case, a PDF reader for sheet music).
