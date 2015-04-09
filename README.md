@@ -81,7 +81,7 @@ Effects control is done using the expression pedal:
 5. Click the button above the knob you just assigned (looks like `*->`) and
    then click the value you want to control.
 
-The pedal range is currently a bit stupid to accomodate my setup. You probably
+The pedal range is currently a bit stupid to accommodate my setup. You probably
 want to adjust it. Look for a line in 12Step.control.js that looks like
 `expressionCc.set(...);`.
 
