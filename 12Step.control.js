@@ -21,6 +21,8 @@ const SCENE_CONTROL_NOTE = 54; // F# 4
 const SCENE_SWITCH_NOTE = 56; // G# 4
 const PAGE_TURN_NOTE = 58; //  A# 4
 
+const PAGE_TURN_PORT = 32313;
+
 const DOUBLE_TAP_HOLD_TIMEOUT = 500; // milliseconds
 
 var noteMap; // A mapping from MIDI note values to their handlers
@@ -102,6 +104,37 @@ function init() {
       function() {} // holdCallback
   );
 
+  var pageTurnServer = host.createRemoteConnection(
+      "Page turn notifier", PAGE_TURN_PORT);
+  var pageTurnConnections = [];
+  pageTurnServer.setClientConnectCallback(function(remoteConnection) {
+    host.println("Client connected");
+    remoteConnection.send(stringToByteArray("McMillen12Step-bitwig"));
+    pageTurnConnections.push(remoteConnection);
+  });
+  // TODO: getPort always returns -1 even though the connection succeeds
+  // host.println("Listening for page turn clients on port " +
+  //     pageTurnServer.getPort());
+
+  noteMap[PAGE_TURN_NOTE] = new NoteManager(
+      DOUBLE_TAP_HOLD_TIMEOUT,
+      function() { // singleTapCallback
+        host.println("Remote page down");
+        pageTurnConnections.forEach(function(remoteConnection) {
+          remoteConnection.send(stringToByteArray("D"));
+        });
+      },
+      function () { // doubleTapCallback
+        host.println("Remote page up");
+        pageTurnConnections.forEach(function(remoteConnection) {
+          // Double taps also fire a single tap, so we need to do this twice.
+          remoteConnection.send(stringToByteArray("U"));
+          remoteConnection.send(stringToByteArray("U"));
+        });
+      },
+      function () {} //holdCallback
+  );
+
   var expressionCc = host.createUserControls(1 /*numControllers*/).getControl(0);
   expressionCc.setLabel("12 Step Expression");
   expressionCc.setIndication(true);
@@ -114,8 +147,6 @@ function init() {
     // expressionCc.set(ccValue, 128);
     expressionCc.set((ccValue > 63) ? 0 : 1, 2);
   }
-
-  // TODO: PAGE_TURN_NOTE
 }
 
 function exit() {
@@ -146,4 +177,12 @@ function onMidi(midiStatus, data1, data2)
     default:
       break;
   }
+}
+
+function stringToByteArray(string) {
+  var bytes = [];
+  for (var i = 0; i < string.length; ++i) {
+    bytes.push(string.charCodeAt(i));
+  }
+  return bytes;
 }
