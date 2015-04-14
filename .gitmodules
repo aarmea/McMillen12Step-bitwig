@@ -1,0 +1,3 @@
+[submodule "client/windows/AHKsock"]
+	path = client/windows/AHKsock
+	url = https://github.com/jleb/AHKsock
