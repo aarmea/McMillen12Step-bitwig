@@ -110,11 +110,15 @@ function init() {
   pageTurnServer.setClientConnectCallback(function(remoteConnection) {
     host.println("Client connected");
     remoteConnection.send(stringToByteArray("McMillen12Step-bitwig"));
+    remoteConnection.setDisconnectCallback(function() {
+      var connectionIndex = pageTurnConnections.indexOf(remoteConnection);
+      pageTurnConnections.splice(connectionIndex, 1 /*deleteCount*/);
+    });
     pageTurnConnections.push(remoteConnection);
   });
   // TODO: getPort always returns -1 even though the connection succeeds
-  // host.println("Listening for page turn clients on port " +
-  //     pageTurnServer.getPort());
+  host.println("Listening for page turn clients on port " +
+      pageTurnServer.getPort());
 
   noteMap[PAGE_TURN_NOTE] = new NoteManager(
       DOUBLE_TAP_HOLD_TIMEOUT,
