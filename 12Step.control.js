@@ -109,7 +109,7 @@ function init() {
   var pageTurnConnections = [];
   pageTurnServer.setClientConnectCallback(function(remoteConnection) {
     host.println("Client connected");
-    remoteConnection.send(stringToByteArray("McMillen12Step-bitwig"));
+    remoteConnection.send(stringToByteArray("McMillen12Step-bitwig\n"));
     remoteConnection.setDisconnectCallback(function() {
       var connectionIndex = pageTurnConnections.indexOf(remoteConnection);
       pageTurnConnections.splice(connectionIndex, 1 /*deleteCount*/);
