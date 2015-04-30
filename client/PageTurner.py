@@ -22,15 +22,19 @@ def connectAndListen(host, port):
   # Windows), and 1 second interval between tries (not set on Mac). Small values
   # because some network noise is better than a performance ruined by a page
   # that didn't turn.
-  set_tcp_keepalive(sock, True, 1, 1, 1)
   try:
     sock.connect((host, port))
+    set_tcp_keepalive(sock, True, 1, 1, 1)
   except socket.error as error:
     print 'Failed to connect:', error
     return
   print 'Connected'
   while True:
-    char = sock.recv(1)
+    char = ""
+    try:
+      char = sock.recv(1)
+    except socket.error:
+      pass
     if not char:
       print 'Connection lost'
       return
