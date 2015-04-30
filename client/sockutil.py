@@ -1,9 +1,9 @@
 """Various low-level utility functions for sockets.
 
-Copied from https://github.com/markokr/skytools/blob/018d85b644f24cadef344e562aded22fee14d036/python/skytools/sockutil.py
+Modified from https://github.com/markokr/skytools/blob/018d85b644f24cadef344e562aded22fee14d036/python/skytools/sockutil.py
 
-LICENSE
-=======
+Original license
+================
 
 SkyTools - tool collection for PostgreSQL
 
@@ -55,16 +55,18 @@ def set_tcp_keepalive(fd, keepalive = True,
     """
 
     # usable on this OS?
-    if not hasattr(socket, 'SO_KEEPALIVE') or not hasattr(socket, 'fromfd'):
+    if not hasattr(socket, 'SO_KEEPALIVE'):
         return
 
     # need socket object
     if isinstance(fd, socket.SocketType):
         s = fd
-    else:
+    elif hasattr(socket, 'fromfd'):
         if hasattr(fd, 'fileno'):
             fd = fd.fileno()
         s = socket.fromfd(fd, socket.AF_INET, socket.SOCK_STREAM)
+    else:
+        return
 
     # skip if unix socket
     if type(s.getsockname()) != type(()):
