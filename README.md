@@ -32,8 +32,8 @@ C4 (MIDI note 48):
 
 ```
  _______________________________
-|  |C| |C|  |  |S| |S| |?|  |   |
-|  |9| |1|  |  |c| |n| |?|  |   |
+|  |C| |C|  |  |S| |S| |P|  |   |
+|  |9| |1|  |  |c| |n| |g|  |   |
 |  | | |0|  |  | | | | | |  |   |
 |  |_| |_|  |  |_| |_| |_|  |   |
 | C | C | C | C | C | C | C | C |
@@ -85,7 +85,25 @@ The pedal range is currently a bit stupid to accommodate my setup. You probably
 want to adjust it. Look for a line in 12Step.control.js that looks like
 `expressionCc.set(...);`.
 
-### Unassigned key (??)
+### Remote page turn (Pg)
 
-B flat is intentionally left unassigned so that it can be captured by another
-application (in my case, a PDF reader for sheet music).
+You can optionally navigate sheet music on a separate machine (assuming its
+platform is supported by Python 2.x and autopy):
+
+#### Setup
+
+1. On the machine running Bitwig, configure your firewall to allow incoming
+   connections to Bitwig on port 32313.
+2. On the remote machine, install Python 2.x and
+   [autopy](https://github.com/msanders/autopy/#installation).
+3. Clone this repository somewhere on the remote machine.
+4. Open Bitwig and get the IP address of this machine.
+5. On the remote machine, open a shell to `$REPO_ROOT/client` and run `python
+   PageTurner.py $BITWIG_MACHINE_IP_ADDRESS`.
+6. On the remote machine, open your sheet music, lyrics, notes, etc. in an
+   application that handles the page up and page down keys.
+
+#### Usage
+
+* To navigate to the next page, single tap B flat.
+* To navigate to the previous page, double tap B flat.
