@@ -11,12 +11,10 @@ def handleCommand(command):
   # print command # XXX
   if command == 'D':
     print 'Page Down'
-    # Cast to long needed because of autopy bug
-    # https://github.com/msanders/autopy/issues/67
-    autopy.key.tap(long(autopy.key.K_PAGEDOWN))
+    autopy.key.tap(autopy.key.K_PAGEDOWN)
   elif command == 'U':
     print 'Page Up'
-    autopy.key.tap(long(autopy.key.K_PAGEUP))
+    autopy.key.tap(autopy.key.K_PAGEUP)
 
 def connectAndListen(host, port):
   sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
