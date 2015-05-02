@@ -23,7 +23,7 @@ const PAGE_TURN_NOTE = 58; //  A# 4
 
 const PAGE_TURN_PORT = 32313;
 
-const DOUBLE_TAP_HOLD_TIMEOUT = 500; // milliseconds
+const DOUBLE_TAP_HOLD_TIMEOUT = 300; // milliseconds
 
 var noteMap; // A mapping from MIDI note values to their handlers
 var ccMap; // A mapping from CC events to their handlers
